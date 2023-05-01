@@ -1,6 +1,7 @@
 import { User } from "next-auth";
 import { CreateUsernameResponse, GraphQLContext } from "../util/types";
-import {ApolloError} from "apollo-server-core"
+// import {ApolloError} from "apollo-server-core"
+import {GraphQLError} from 'graphql';
 const userResolvers={
     Query:{
         searchUsers:async(
@@ -12,7 +13,7 @@ const userResolvers={
            const {session,prisma}=context;
            console.log("Entered Here in User",session);
            if(!session?.user){
-            throw new ApolloError("Can't find user");
+            throw new GraphQLError("Can't find user");
            }
            const {
             user:{username}
@@ -29,7 +30,7 @@ const userResolvers={
             })
             return users;
            }catch(error:any){
-            throw new ApolloError(error?.message);
+            throw new GraphQLError(error?.message);
            }
         }
     },
