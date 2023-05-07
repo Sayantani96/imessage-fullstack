@@ -84,7 +84,7 @@ const ConversationModal:React.FC<ModalProps>=({session,isOpen,onClose})=> {
 
 
     const createConversation=async()=>{
-      const participantIds=[userId as string,...participants.map(member=>member.id)];
+      const participantIds=[userId,...participants.map(member=>member.id)];
         try{
             //call createConversation mutation
             const {data}=await addConversation({

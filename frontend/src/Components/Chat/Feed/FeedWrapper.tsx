@@ -2,9 +2,9 @@ import { Box, Button, Flex, Stack, Text } from "@chakra-ui/react";
 import { Session } from "next-auth";
 import { useRouter } from "next/router";
 import React from "react";
-// import MessageInput from "./Input";
+import MessageInput from "./Messages/Input";
 import MessagesHeader from "./Messages/Header";
-// import Messages from "./Messages/Messages";
+import Messages from "./Messages/Messages";
 // import NoConversationSelected from "./NoConversationSelected";
 
 interface FeedWrapperProps {
@@ -32,20 +32,20 @@ const FeedWrapper: React.FC<FeedWrapperProps> = ({ session }) => {
             flexGrow={1}
           >
             <MessagesHeader
-              userId={session.user.id as string}
-              conversationId={conversationId}
-            />
-            {/* <Messages
               userId={session.user.id}
               conversationId={conversationId}
-            /> */}
+            />
+            <Messages
+              userId={session.user.id}
+              conversationId={conversationId}
+            />
           </Flex>
-          {/* <MessageInput session={session} conversationId={conversationId} /> */}
+          <MessageInput session={session} conversationId={conversationId} />
         </>
-      ) : (
+      ) : 
         // <NoConversationSelected />
-        ''
-      )}
+       <Text>No Conversation Selected</Text> 
+}
     </Flex>
   );
 };

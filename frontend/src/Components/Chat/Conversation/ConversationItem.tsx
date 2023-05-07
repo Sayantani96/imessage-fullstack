@@ -3,6 +3,7 @@ import { ConversationPopulated } from "../../../../../backend/src/util/types"
 import { formatUsernames } from "../../../util/functions";
 import { formatRelative } from "date-fns";
 import { enUS } from "date-fns/locale";
+import { GoPrimitiveDot } from "react-icons/go";
 
 interface ConversationItemProps{
     conversation:ConversationPopulated;
@@ -10,10 +11,18 @@ interface ConversationItemProps{
     isSelected:boolean;
     userId?:string;
     userImage?:any;
+    hasSeenLatestMessage: boolean|undefined;
 }
 
-const ConversationItem:React.FC<ConversationItemProps> = ({conversation,onClick,isSelected,userId,userImage}) => {
-  console.log(isSelected);
+const ConversationItem:React.FC<ConversationItemProps> = ({
+   conversation,
+  onClick,
+  isSelected,
+  userId,
+  userImage,
+  hasSeenLatestMessage
+}) => {
+  console.log("Latest Message",conversation.latestMessage);
 
   const formatRelativeLocale = {
     lastWeek: "eeee",
@@ -73,11 +82,7 @@ const ConversationItem:React.FC<ConversationItemProps> = ({conversation,onClick,
         </MenuList>
       </Menu>
     )} */}
-    {/* <Flex position="absolute" left="-6px">
-      {hasSeenLatestMessage === false && (
-        <GoPrimitiveDot fontSize={18} color="#6B46C1" />
-      )}
-    </Flex> */}
+    
     <Avatar src={userImage}/>
     <Flex justify="space-between" width="80%" height="100%">
       <Flex direction="column" width="70%" height="100%">
@@ -112,6 +117,11 @@ const ConversationItem:React.FC<ConversationItemProps> = ({conversation,onClick,
               ],
           },
         })}
+        <Flex position="absolute" right="40px" ml={4}>
+      {hasSeenLatestMessage === false && (
+        <GoPrimitiveDot fontSize={18} color="#6B46C1" />
+        )} 
+    </Flex>
       </Text>
     </Flex>
   </Stack>

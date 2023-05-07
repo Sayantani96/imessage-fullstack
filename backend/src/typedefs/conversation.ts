@@ -5,9 +5,16 @@ const typeDefs=gql`
     type Mutation{
         createConversation(participantIds:[String]):createConversationResponse
     }
+    type Mutation{
+        markConversationAsRead(userId:String!,conversationId:String!): Boolean
+    }
     type createConversationResponse{
         conversationId:String
     }
+    type ConversationUpdatedSubscriptionPayload{
+        conversation:Conversation
+    }
+
     type Conversation{
         id:String
         latestMessage:Message
@@ -25,6 +32,9 @@ const typeDefs=gql`
     }
     type Subscription{
         conversationCreated:Conversation
+    }
+    type Subscription{
+        conversationUpdated:ConversationUpdatedSubscriptionPayload
     }
 `
 export default typeDefs;

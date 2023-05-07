@@ -9,6 +9,20 @@ const typeDefs=gql`
         body:String
         createdAt:Date
     }
+    type Mutation {
+        sendMessage(
+            id:String,
+            conversationId:String,
+            senderId:String,
+            body:String
+            ): Boolean
+    }
+    type Query{
+        messages(conversationId:String):[Message]
+    }
+    type Subscription {
+        messageSent (conversationId:String):Message
+    }
 `
 
 export default typeDefs;

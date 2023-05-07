@@ -1,8 +1,9 @@
 // import { ApolloError } from "apollo-server-core";
-import { ConversationPopulated, GraphQLContext } from "../util/types";
+import { ConversationPopulated, ConversationUpdatedSubscriptionData, GraphQLContext } from "../util/types";
 import { Prisma } from "@prisma/client";
 import { withFilter } from "graphql-subscriptions";
 import {GraphQLError} from 'graphql';
+import { userIsConversationParticipant } from "../util/functions";
 
 const resolvers={
     Query:{
@@ -79,6 +80,45 @@ const resolvers={
            }catch(error:any){
                 throw new GraphQLError(error?.message);
            }
+        },
+        markConversationAsRead:async function(
+            _:any,
+            args:{
+                userId:string,
+                conversationId:string
+            },
+            context:GraphQLContext
+        ):Promise<boolean>{
+            const {session,prisma}=context;
+            const {userId,conversationId}=args;
+
+            if(!session?.user){
+                throw new GraphQLError("Not Authorised");
+           }
+          try{
+            const participant=await prisma.conversationParticipant.findFirst({
+                where:{
+                    userId,
+                    conversationId
+                }
+            })
+
+            if(!participant){
+                throw new GraphQLError("participant entity not found");
+            }
+            await prisma.conversationParticipant.update({
+                where:{
+                    id:participant.id,
+                },
+                data:{
+                    hasSeenLatestMessage:true
+                }
+            })
+            return true;
+          }catch(error:any){
+            throw new GraphQLError("Mark Conversation error",error?.message)
+          }
+
         }
     },
     Subscription:{
@@ -100,6 +140,56 @@ const resolvers={
                         const userParticipant:boolean= !!participants.find(p=>p.userId===session?.user.id)
                         return userParticipant;
                 })
+        },
+        conversationUpdated:{
+            subscribe: withFilter(
+                (_: any, __: any, context: GraphQLContext) => {
+                  const { pubsub } = context;
+        
+                  return pubsub.asyncIterator(["CONVERSATION_UPDATED"]);
+                },
+                (
+                  payload: ConversationUpdatedSubscriptionData,
+                  _,
+                  context: GraphQLContext
+                ) => {
+                  const { session } = context;
+        
+                  if (!session?.user) {
+                    throw new GraphQLError("Not authorized");
+                  }
+        
+                  const { id: userId } = session.user;
+                  const {
+                    conversationUpdated: {
+                      conversation: { participants },
+                    //   addedUserIds,
+                    //   removedUserIds,
+                    },
+                  } = payload;
+        
+                  const userIsParticipant = userIsConversationParticipant(
+                    participants,
+                    userId as string
+                  );
+        
+                //   const userSentLatestMessage =
+                //     payload.conversationUpdated.conversation.latestMessage?.senderId ===
+                //     userId;
+        
+                //   const userIsBeingRemoved =
+                //     removedUserIds &&
+                //     Boolean(removedUserIds.find((id) => id === userId));
+        
+                //   return (
+                //     (userIsParticipant && !userSentLatestMessage) ||
+                //     userSentLatestMessage ||
+                //     userIsBeingRemoved
+                //   );
+
+                return userIsParticipant;
+                }
+              ),
         }
 
     }
@@ -107,6 +197,8 @@ const resolvers={
 export interface ConversationCreatedSubscriptionPayload{
     conversationCreated:ConversationPopulated;
 }
+
+
 
 export const participantPopulated=Prisma.validator<Prisma.ConversationParticipantInclude>()({
     user:{

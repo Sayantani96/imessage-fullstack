@@ -34,6 +34,11 @@ export default{
                 conversationId
             }
         }
+        `,
+        markConversationAsRead:gql`
+        mutation MarkConversationAsRead($userId:String!,$conversationId:String!){
+            markConversationAsRead(userId:$userId,conversationId:$conversationId)
+        }
         `
     },
     Subscription:{
@@ -60,6 +65,32 @@ export default{
                         updatedAt
                     }
                 }
+        `,
+        conversationUpdated:gql`
+            subscription ConversationUpdated {
+                conversationUpdated{
+                    conversation{
+                        id
+                        participants{
+                            user{
+                                id
+                                username
+                            }
+                            hasSeenLatestMessage
+                        }
+                        latestMessage{
+                            id
+                            sender{
+                                id
+                                username
+                            }
+                            body
+                            createdAt
+                        }
+                        updatedAt
+                    }   
+                }
+            }
         `
     }
 }

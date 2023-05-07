@@ -2,7 +2,7 @@ import { Box,Text } from "@chakra-ui/react";
 import { Session } from "next-auth";
 import Modal from "./Modal/Modal";
 import { useState } from "react";
-import {ConversationPopulated} from '../../../../../backend/src/util/types';
+import {ConversationPopulated, ParticipantPopulated} from '../../../../../backend/src/util/types';
 import ConversationItem from "./ConversationItem";
 import { useRouter } from "next/router";
 
@@ -12,6 +12,7 @@ interface ConversationLists{
     conversations:Array<ConversationPopulated>
     viewConversation: (
         conversationId: string,
+        hasSeenLatestMessage: boolean
       ) => void;
 }
 
@@ -23,6 +24,12 @@ const ConversationList : React.FC<ConversationLists>=({session,conversations,vie
     const {
         user:{id:userId}
     }=session
+
+    const getUserParticipantObject = (conversation: ConversationPopulated) => {
+        return conversation.participants.find(
+          (p) => p.user.id === session.user.id
+        ) as ParticipantPopulated;
+      };
     
   return (
     <Box width="100%">
@@ -46,16 +53,22 @@ const ConversationList : React.FC<ConversationLists>=({session,conversations,vie
         <Modal isOpen={isOpen} onClose={closeModal} session={session}/>
         {
             conversations.map(
-                conversation=>
+                conversation=>{
+                    const { hasSeenLatestMessage } = getUserParticipantObject(conversation);
+                    return(
                 <ConversationItem 
                 conversation={conversation} 
                 key={conversation.id}
                 onClick={() =>
-                    viewConversation(conversation.id)
+                    viewConversation(conversation.id,hasSeenLatestMessage)
                   }
                 isSelected={conversation.id===router.query.conversationId}
-                userId={userId as string}
+                userId={userId}
+                hasSeenLatestMessage={hasSeenLatestMessage}
                 />
+                    )
+                }
+                
                 )
         }
     </Box>
